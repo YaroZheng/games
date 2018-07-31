@@ -42,7 +42,7 @@ var config = {
     y: 20,  // y坐标长度
     l: 40,  // 方格边长
     r: 39,  // 方块半径
-    t: 100  // 积木移动速度 100ms/移动一格
+    t: 300  // 积木移动速度 100ms/移动一格
 };
 /**
  * 得分
@@ -315,6 +315,15 @@ function getCoordinate (x, y ,type , derection) {
         for(var j=0; j < arr[i].length; j++) {
             if (arr[i][j] == 1) {
                 var x1 = (x+j), y1 = (y-arrL+i+1);
+                // if (x1 < 0) {
+                //     return getCoordinate(x+1, y, type, derection);
+                // }
+                // if (x1 >= config.x) {
+                //     return getCoordinate(x-1, y, type, derection);
+                // }
+                if (x1 < 0 || x1 >= config.x) {
+                    return getCoordinate(x-x1/Math.abs(x1), y, type, derection);
+                }
                 coordinate.push([y1, x1]);
             }
         }
