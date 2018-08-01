@@ -102,13 +102,18 @@ test();
 // 积木
 var Block = {
     x: 0,
-    y: 3,
+    y: 0,
     radius: config.r,
     color: '#ffffff',
     type: 5,
     derection: 1,
     coordinate: null,
-    
+    init: function() {
+        this.x = 4;
+        this.y = -1;
+        this.derection = parseInt(Math.random()*4);
+        this.type = parseInt(Math.random()*Model.length);
+    },
     draw: function() {
         ctx.beginPath();
         ctx.fillStyle = this.color;
@@ -122,7 +127,6 @@ var Block = {
 }
 // Block.draw();
 // throw "1111";
-initBlock();
 function handle() {
     displayData();
     fpsObj.frameNumber ++;
@@ -137,7 +141,7 @@ function handle() {
             }
             panel[y][x] = 1;
         }
-        initBlock();
+        Block.init();
     } else {
         Block.y ++;
     }
@@ -187,17 +191,6 @@ function score() {
     }
 }
 
-function initBlock() {
-    Block.y = -1;
-    Block.x = 4;
-    let type;
-    do {
-        type = parseInt(Math.random()*Model.length);
-    } while (type == Block.type);
-    Block.derection = parseInt(Math.random()*4);
-    Block.type = type;
-}
-
 function start() {
     if (state > 0) {
         fpsObj.init();
@@ -220,7 +213,7 @@ function pause() {
 }
 function restart() {
     stop();
-    initBlock();
+    Block.init();
     initPanel();
     goal = 0;
     state = 1;
