@@ -67,9 +67,18 @@ var current = {
     createShape: function () {
         var randomIndex = parseInt( Math.random() * shapes.length ),
             randomShape = shapes[randomIndex],
-            randomShape = shapes[0],
-            randomRotate = parseInt( Math.random() * 4 );
-        this.nextShape = convert( randomShape, randomRotate );
+            //randomShape = shapes[0],
+            randomRotate = parseInt( Math.random() * 4 ),
+            nextShape = convert( randomShape, randomRotate );
+        // 设置 tetromino 的颜色, +1 是为了避开0
+        for ( var y = 0; y < nextShape.length; y++ ) {
+            for ( var x = 0; x < nextShape[y].length; x++ ) {
+                if ( nextShape[y][x] ) {
+                    nextShape[y][x] = randomIndex + 1;
+                }
+            }
+        }
+        this.nextShape = nextShape;
     },
     aGoodYo: function() {// 一个好的初始 y 坐标
         var shape = this.nextShape;
@@ -88,11 +97,8 @@ var cols = 20,
 function handler() {
     if ( volid(0, 1) ) {
         current.y ++;
-        
     } else {
         tetrominoToBoard();
-        current.reset();
-        clearLines();
     }
 }
 
@@ -101,13 +107,16 @@ function tetrominoToBoard() {
     tetromino.forEach( arr => {
         let x = arr[1], y = arr[0];
         if ( y > 0 ) {
-            board[y][x] = 1;
+            board[y][x] = arr[2];
         } else {
             isOver = true;
         }
     });
     if ( isOver ) {
         gameOver();
+    } else {
+        current.reset();
+        clearLines();
     }
 }
 function gameOver() {
@@ -143,6 +152,11 @@ function move( direction ) {
                 current.y++;
             }
             break;
+        case 'drop':
+            while ( volid( 0, 1) ) {
+                current.y++;
+            }
+            break;
     }
 }
 /**
@@ -174,12 +188,6 @@ function aGoodRorate(xo, shape) {
         if ( x1 < 0 || x1 >= board[0].length ) {
             return aGoodRorate( xo - x1 / Math.abs(x1), shape );
         }
-        // if ( x1 < 0 || x1 > board[0].length ) {
-        //     return aGoodRorate( xo + 1 );
-        // }
-        // if ( x1 >= board[0].length ) {
-        //     return aGoodRorate( xo - 1 );
-        // }
     }
     return xo;
 }
@@ -190,10 +198,10 @@ function aGoodRorate(xo, shape) {
 function clearLines() {
     var lines = 0;
     for( var y = 0; y < board.length; y++ ) {
-        if ( board[y].every( value => value === 1 ) ) {
+        if ( board[y].every( value => value > 0 ) ) {
             board.splice( y, 1 );
             board.unshift( Array(board[0].length).fill(0) );
-            lines++;
+            lines ++;
         }
     }
     // add up score
@@ -219,12 +227,12 @@ function computedCoordinates(xo, yo, shape) {
         coordinatesArr = [],
         x1, y1;
 
-    for (var y = 0; y < shape.length; y++) {
-        for (var x = 0; x < shape[y].length; x++) {
-            if (shape[y][x]) {
+    for ( var y = 0; y < shape.length; y++ ) {
+        for ( var x = 0; x < shape[y].length; x++ ) {
+            if ( shape[y][x] ) {
                 x1 = xo + (x - xCenter);
                 y1 = yo + (y - yCenter);
-                coordinatesArr.push( [y1, x1] );
+                coordinatesArr.push( [y1, x1, shape[y][x]] );
             }
         }
     }
@@ -251,7 +259,7 @@ function volid( offsetX, offsetY, shape ) {
         if ( x < 0 || x >= board[0].length || y >= board.length ) {
             return false;
         }
-        if ( y > 0 && board[y][x] === 1) {
+        if ( y > 0 && board[y][x] ) {
             return false;
         }
     }
@@ -259,8 +267,8 @@ function volid( offsetX, offsetY, shape ) {
 }
 
 function pause() {
-    if (timer) {
-        clearInterval(timer);
+    if ( timer ) {
+        clearInterval( timer );
         timer = null;
         current.freeze = false;
     } else {
@@ -272,10 +280,17 @@ function start() {
     current.freeze = true;
     timer = setInterval(handler, 300);
 }
+function restart() {
+    clearInterval( timer );
+    init();
+    score = 0;
+    current.init();
+    start();
+}
 
 function keyPress( key ) {
     switch ( key ) {
-        case 'left': case 'right': case 'down':
+        case 'left': case 'right': case 'down': case 'drop':    
             move( key );
             break;
         case 'rotate':
@@ -284,6 +299,9 @@ function keyPress( key ) {
         case 'pause':
             pause();
             break;
+        case 'restart':
+            restart();
+            break;
     }
 }
 /**
@@ -291,6 +309,7 @@ function keyPress( key ) {
  * 
  * @param {Array} arr 
  * @param {integer} time 转换次数，默认转一次
+ * @returns {Array} 新的二维数组
  */
 function convert(arr, time) {
     if (typeof time !== 'number') {
@@ -301,8 +320,8 @@ function convert(arr, time) {
     if (time == 0) {
         return arr;
     }
-    var xl = arr[0].length; // 子数组数
-    var yl = arr.length; // 子数组的元素数
+    var xl = arr[0].length;
+    var yl = arr.length;
     var rtn = [];
     for (var i = 0; i < xl; i++) {
         rtn[i] = [];

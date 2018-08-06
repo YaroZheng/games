@@ -14,7 +14,7 @@ var canvasWidth = 400, canvasHeight = 800;
 var board = [], tetromino = [];
 var boardCols = 10, boardRows = 20;
 var blockWidth = canvasWidth / boardCols, blockHeight = canvasHeight / boardRows;
-var colors = ["red", "white", "purple", "blue", "green", "brown", "cyan"];
+var colors = ["Gold", "Olive", "purple", "DeepSkyBlue", "ForestGreen", "brown", "Turquoise"];
 var blockColor = "#ffffff";
 /**
  * draw a single equare at (x, y)
@@ -23,9 +23,7 @@ var blockColor = "#ffffff";
  * @param {number} y 
  */
 function drawBlock( x, y, c ) {
-    if ( typeof colors[c] === 'string' ) {
-        ctx.fillStyle = colors[c];
-    }
+    ctx.fillStyle = colors[c-1];
     ctx.fillRect( blockWidth * x, blockHeight * y, blockWidth - 1, blockHeight - 1);
 }
 
@@ -46,13 +44,13 @@ function render() {
     for ( var y = 0; y < board.length; y++ ) {
         for ( var x = 0; x < board[y].length; x++ ) {
             if ( board[y][x] ) {
-                drawBlock( x, y );
+                drawBlock( x, y, board[y][x] );
             }
         }
     }
 
     tetromino.forEach( arr => {
-        drawBlock( arr[1], arr[0]);
+        drawBlock( arr[1], arr[0], arr[2] );
     });
 }
 
